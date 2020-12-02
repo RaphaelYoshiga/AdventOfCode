@@ -4,45 +4,83 @@ using System.Linq;
 
 namespace AdventOfCode
 {
+    class Day2
+    {
+        public static void Do2()
+        {
+            var readAllLines = File.ReadAllLines("input2.txt");
+            int totalCount = 0;
+            foreach (var line in readAllLines)
+            {
+                var splitLine = line.Split(": ");
+                var policy = splitLine[0];
+
+                var strings = policy.Split(new char[] { '-', ' ' });
+                var min = int.Parse(strings[0]);
+                var max = int.Parse(strings[1]);
+                var policyChar = strings[2][0];
+
+                var password = splitLine[1];
+
+
+                int correct = 0;
+
+                var firstIndexChar = password[min - 1];
+                var secondIndexChar = password.Length >= max ? password[max - 1] : ' ';
+
+                if (firstIndexChar == policyChar)
+                    correct++;
+
+                if (secondIndexChar == policyChar)
+                    correct++;
+
+                if (correct == 1)
+                    totalCount++;
+            }
+
+            Console.WriteLine($"Passwords: {totalCount}");
+            Console.ReadLine();
+        }
+
+        private static void Do()
+        {
+            var readAllLines = File.ReadAllLines("input2.txt");
+            int totalCount = 0;
+            foreach (var line in readAllLines)
+            {
+                var splitLine = line.Split(": ");
+                var policy = splitLine[0];
+
+                var strings = policy.Split(new char[] { '-', ' ' });
+                var min = int.Parse(strings[0]);
+                var max = int.Parse(strings[1]);
+                var policyChar = strings[2][0];
+
+                var password = splitLine[1];
+
+                var passwordDictionary = password.GroupBy(x => x).ToDictionary(x => x.Key, x => x.Count());
+
+
+                var valid = passwordDictionary.ContainsKey(policyChar) && min <= passwordDictionary[policyChar] &&
+                            max >= passwordDictionary[policyChar];
+
+                if (valid)
+                    totalCount++;
+            }
+
+            Console.WriteLine($"Passwords: {totalCount}");
+        }
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
-            var readAllLines = File.ReadAllLines("input.txt");
-            var nums = readAllLines.Select(int.Parse).ToList();
-
-            for (int i = 0; i < nums.Count; i++)
-            {
-                var num = nums[i];
-                for (int y = i; y < nums.Count; y++)
-                {
-                    if (y == i)
-                        continue;
-                    
-                    var otherNum = nums[y];
-
-
-                    for (int j = 0; j < nums.Count; j++)
-                    {
-                        if (j == y || j == i)
-                            continue;
-
-                        var anotherNum = nums[j];
-
-                        if (otherNum + num + anotherNum == 2020)
-                        {
-                            Console.WriteLine($"{num} + {otherNum} + {anotherNum} = {num * otherNum * anotherNum}");
-                        }
-
-                    }
-
-
-
-
-                }
-
-            }
             Console.WriteLine("Hello World!");
+
+            Day2.Do2();
         }
+
+        
     }
 }
