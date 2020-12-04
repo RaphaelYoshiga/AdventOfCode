@@ -1,86 +1,127 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace AdventOfCode
 {
-    class Day2
-    {
-        public static void Do2()
-        {
-            var readAllLines = File.ReadAllLines("input2.txt");
-            int totalCount = 0;
-            foreach (var line in readAllLines)
-            {
-                var splitLine = line.Split(": ");
-                var policy = splitLine[0];
-
-                var strings = policy.Split(new char[] { '-', ' ' });
-                var min = int.Parse(strings[0]);
-                var max = int.Parse(strings[1]);
-                var policyChar = strings[2][0];
-
-                var password = splitLine[1];
-
-
-                int correct = 0;
-
-                var firstIndexChar = password[min - 1];
-                var secondIndexChar = password.Length >= max ? password[max - 1] : ' ';
-
-                if (firstIndexChar == policyChar)
-                    correct++;
-
-                if (secondIndexChar == policyChar)
-                    correct++;
-
-                if (correct == 1)
-                    totalCount++;
-            }
-
-            Console.WriteLine($"Passwords: {totalCount}");
-            Console.ReadLine();
-        }
-
-        private static void Do()
-        {
-            var readAllLines = File.ReadAllLines("input2.txt");
-            int totalCount = 0;
-            foreach (var line in readAllLines)
-            {
-                var splitLine = line.Split(": ");
-                var policy = splitLine[0];
-
-                var strings = policy.Split(new char[] { '-', ' ' });
-                var min = int.Parse(strings[0]);
-                var max = int.Parse(strings[1]);
-                var policyChar = strings[2][0];
-
-                var password = splitLine[1];
-
-                var passwordDictionary = password.GroupBy(x => x).ToDictionary(x => x.Key, x => x.Count());
-
-
-                var valid = passwordDictionary.ContainsKey(policyChar) && min <= passwordDictionary[policyChar] &&
-                            max >= passwordDictionary[policyChar];
-
-                if (valid)
-                    totalCount++;
-            }
-
-            Console.WriteLine($"Passwords: {totalCount}");
-        }
-    }
-
     class Program
     {
         static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
 
-            Day2.Do2();
+            Day4.Do();
         }
 
-        
+
+    }
+
+    internal class Day4
+    {
+        public static void Do()
+        {
+            var fileStream = File.OpenRead("input4.txt");
+
+            int count = 0;
+
+            string line = null;
+            using (var sr = new StreamReader(fileStream))
+            {
+                var fieldsDictionary = new Dictionary<string, string>();
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if (string.IsNullOrEmpty(line))
+                    {
+                        if (IsValid(fieldsDictionary))
+                            count++;
+
+                        fieldsDictionary = new Dictionary<string, string>();
+                    }
+                    else
+                    {
+                        foreach (var f in line.Split(" "))
+                        {
+                            fieldsDictionary.Add(f.Substring(0, f.IndexOf(':')), f.Substring(f.IndexOf(':') + 1));
+                        }
+                    }
+                }
+                if (IsValid(fieldsDictionary))
+                    count++;
+            }
+
+            Console.WriteLine($"{count}");
+        }
+
+        private static bool IsValid(Dictionary<string, string> fields)
+        {
+            if (YearNotInRange(fields, "byr", 1920, 2002))
+                return false;
+
+            if (YearNotInRange(fields, "iyr", 2010, 2020))
+                return false;
+
+            if (YearNotInRange(fields, "eyr", 2020, 2030))
+                return false;
+
+            if (!HeightCheck(fields)) 
+                return false;
+
+            if (!fields.TryGetValue("hcl", out var hairColor) || !Regex.IsMatch(hairColor, "^#[0-9a-f]{6}$"))
+                return false;
+
+            var validEyeColors = new HashSet<string>
+            {
+                "amb",
+                "blu",
+                "brn",
+                "gry",
+                "grn",
+                "hzl",
+                "oth"
+            };
+            if (!fields.TryGetValue("ecl", out var eyeColor) || !validEyeColors.Contains(eyeColor))
+                return false;
+
+            if (!fields.TryGetValue("pid", out var passport) || !Regex.IsMatch(passport, "^[0-9]{9}$"))
+                return false;
+
+            return true;
+        }
+
+        private static bool HeightCheck(Dictionary<string, string> fields)
+        {
+            if (!fields.TryGetValue("hgt", out var height))
+                return false;
+
+            var heightType = height.Substring(height.Length - 2);
+            if (heightType != "cm" && heightType != "in")
+                return false;
+
+            var i = int.Parse(height.Substring(0, height.Length - 2));
+            if (heightType == "cm")
+            {
+                if (i < 150 || i > 193)
+                    return false;
+            }
+            else
+            {
+                if (i < 59 || i > 76)
+                    return false;
+            }
+
+            return true;
+        }
+
+        private static bool YearNotInRange(Dictionary<string, string> fields, string field, int min, int max)
+        {
+            return !fields.TryGetValue(field, out var birthYear) || 
+                   !Regex.IsMatch(birthYear, "^[0-9]{4}$") || 
+                   !int.TryParse(birthYear, out int number) || 
+                   number < min || 
+                   number > max;
+        }
     }
 }
