@@ -7,7 +7,7 @@ import (
     "os"
 )
 
-func main(){
+func day3(){
 	file, err := os.Open("input3.txt")
     if err != nil {
         log.Fatal(err)
