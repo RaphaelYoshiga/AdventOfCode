@@ -14,7 +14,7 @@ type Command struct {
 	index int
 }
 
-func main(){
+func main8(){
 	file, err := os.Open("input8.txt")
     if err != nil {
         log.Fatal(err)
